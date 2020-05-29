@@ -20,14 +20,19 @@ class SaveImageWithIMU{
 		ros::Publisher pub_pose;
 		/*objects*/
 		sensor_msgs::Imu imu;
+		nav_msgs::Odometry odom_now;
+		nav_msgs::Odometry odom_last;
 		geometry_msgs::PoseStamped pose;
 		std::ofstream file;
 		/*counter*/
 		int counter = 0;
+		/*flag*/
+		bool got_first_cb_odom = false;
 		/*param*/
 		std::string save_dir_path;
 		std::string save_csv_path;
 		int save_data_limit;
+		double th_diff_position;
 	public:
 		SaveImageWithIMU();
 		void InitializePose(geometry_msgs::PoseStamped& pose);
@@ -35,6 +40,7 @@ class SaveImageWithIMU{
 		void CallbackIMU(const sensor_msgs::ImuConstPtr& msg);
 		void CallbackImage(const sensor_msgs::ImageConstPtr& msg);
 		void CallbackOdom(const nav_msgs::OdometryConstPtr& msg);
+		bool HasOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2);
 		void Publication(void);
 		void Record(cv_bridge::CvImagePtr cv_ptr);
 };
@@ -49,6 +55,8 @@ SaveImageWithIMU::SaveImageWithIMU()
 	std::cout << "save_csv_path = " << save_csv_path << std::endl;
 	nhPrivate.param("save_data_limit", save_data_limit, 10);
 	std::cout << "save_data_limit = " << save_data_limit << std::endl;
+	nhPrivate.param("th_diff_position", th_diff_position, 10.0);
+	std::cout << "th_diff_position = " << th_diff_position << std::endl;
 
 	/*subscriber*/
 	sub_imu = nh.subscribe("/imu/data", 1, &SaveImageWithIMU::CallbackIMU, this);
@@ -88,12 +96,22 @@ void SaveImageWithIMU::CallbackIMU(const sensor_msgs::ImuConstPtr& msg)
 void SaveImageWithIMU::CallbackImage(const sensor_msgs::ImageConstPtr& msg)
 {
 	/* std::cout << "msg->encoding = " << msg->encoding << std::endl; */
-	try{
-		cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-		Record(cv_ptr);
+	if(counter < save_data_limit){
+		if(got_first_cb_odom && HasOdomDiff(odom_now, odom_last)){
+			try{
+				cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+				Record(cv_ptr);
+				odom_last = odom_now;
+				++counter;
+			}
+			catch(cv_bridge::Exception& e){
+				ROS_ERROR("cv_bridge exception: %s", e.what());
+			}
+		}
 	}
-	catch(cv_bridge::Exception& e){
-		ROS_ERROR("cv_bridge exception: %s", e.what());
+	else if(file.is_open()){
+		file.close();
+		std::cout << save_csv_path << " was closed" << std::endl;
 	}
 }
 
@@ -102,6 +120,12 @@ void SaveImageWithIMU::CallbackOdom(const nav_msgs::OdometryConstPtr& msg)
 	/* std::cout << "msg->twist.twist.linear.x = " << msg->twist.twist.linear.x << std::endl; */
 	pose.header.stamp = msg->header.stamp;
 	pose.header.frame_id = msg->header.frame_id;
+
+	if(!got_first_cb_odom){
+		odom_last = *msg;
+		got_first_cb_odom = true;
+	}
+	odom_now = *msg;
 }
 
 void SaveImageWithIMU::Publication(void)
@@ -110,26 +134,29 @@ void SaveImageWithIMU::Publication(void)
 	pub_pose.publish(pose);
 }
 
+bool SaveImageWithIMU::HasOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2)
+{
+	double dx = odom2.pose.pose.position.x - odom1.pose.pose.position.x;
+	double dy = odom2.pose.pose.position.y - odom1.pose.pose.position.y;
+	double dz = odom2.pose.pose.position.z - odom1.pose.pose.position.z;
+	double diff_position = sqrt(dx*dx + dy*dy + dz*dz);
+	if(diff_position > th_diff_position)	return true;
+	return false;
+}
+
 void SaveImageWithIMU::Record(cv_bridge::CvImagePtr cv_ptr)
 {
-	if(counter < save_data_limit){
-		/*image*/
-		std::string save_img_name = save_dir_path + "/img" + std::to_string(counter) + ".jpg";
-		cv::imwrite(save_img_name, cv_ptr->image);
-		/* cv::imshow("img", cv_ptr->image); */
-		/* cv::waitKey(0); */
-		/*imu*/
-		file 
-			<< imu.linear_acceleration.x << "," 
-			<< imu.linear_acceleration.y << "," 
-			<< imu.linear_acceleration.z << ","
-			<< save_img_name << std::endl;
-		counter++;
-	}
-	else if(file.is_open()){
-		file.close();
-		std::cout << save_csv_path << " was closed" << std::endl;
-	}
+	/*image*/
+	std::string save_img_name = save_dir_path + "/img" + std::to_string(counter) + ".jpg";
+	cv::imwrite(save_img_name, cv_ptr->image);
+	/* cv::imshow("img", cv_ptr->image); */
+	/* cv::waitKey(0); */
+	/*imu*/
+	file 
+		<< imu.linear_acceleration.x << "," 
+		<< imu.linear_acceleration.y << "," 
+		<< imu.linear_acceleration.z << ","
+		<< save_img_name << std::endl;
 }
 
 int main(int argc, char** argv)
