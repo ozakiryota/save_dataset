@@ -1,9 +1,14 @@
+/*ros*/
 #include <ros/ros.h>
+#include <tf/tf.h>
+/*msg*/
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/Image.h>
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/PoseStamped.h>
+/*C*/
 #include <fstream>
+/*opencv*/
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
 
@@ -32,7 +37,8 @@ class SaveImageWithIMU{
 		std::string save_dir_path;
 		std::string save_csv_path;
 		int save_data_limit;
-		double th_diff_position;
+		double th_diff_position_m;
+		double th_diff_angle_deg;
 	public:
 		SaveImageWithIMU();
 		void InitializePose(geometry_msgs::PoseStamped& pose);
@@ -55,8 +61,10 @@ SaveImageWithIMU::SaveImageWithIMU()
 	std::cout << "save_csv_path = " << save_csv_path << std::endl;
 	nhPrivate.param("save_data_limit", save_data_limit, 10);
 	std::cout << "save_data_limit = " << save_data_limit << std::endl;
-	nhPrivate.param("th_diff_position", th_diff_position, 10.0);
-	std::cout << "th_diff_position = " << th_diff_position << std::endl;
+	nhPrivate.param("th_diff_position_m", th_diff_position_m, 10.0);
+	std::cout << "th_diff_position_m = " << th_diff_position_m << std::endl;
+	nhPrivate.param("th_diff_angle_deg", th_diff_angle_deg, 30.0);
+	std::cout << "th_diff_angle_deg = " << th_diff_angle_deg << std::endl;
 
 	/*subscriber*/
 	sub_imu = nh.subscribe("/imu/data", 1, &SaveImageWithIMU::CallbackIMU, this);
@@ -101,8 +109,6 @@ void SaveImageWithIMU::CallbackImage(const sensor_msgs::ImageConstPtr& msg)
 			try{
 				cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 				Record(cv_ptr);
-				odom_last = odom_now;
-				++counter;
 			}
 			catch(cv_bridge::Exception& e){
 				ROS_ERROR("cv_bridge exception: %s", e.what());
@@ -136,11 +142,31 @@ void SaveImageWithIMU::Publication(void)
 
 bool SaveImageWithIMU::HasOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2)
 {
+	/*position*/
 	double dx = odom2.pose.pose.position.x - odom1.pose.pose.position.x;
 	double dy = odom2.pose.pose.position.y - odom1.pose.pose.position.y;
 	double dz = odom2.pose.pose.position.z - odom1.pose.pose.position.z;
-	double diff_position = sqrt(dx*dx + dy*dy + dz*dz);
-	if(diff_position > th_diff_position)	return true;
+	double diff_position_m = sqrt(dx*dx + dy*dy + dz*dz);
+	/*rotation*/
+	tf::Quaternion q1, q2, q_rel_rot;
+	quaternionMsgToTF(odom1.pose.pose.orientation, q1);
+	quaternionMsgToTF(odom2.pose.pose.orientation, q2);
+	q_rel_rot = q2.inverse()*q1;
+	double droll, dpitch, dyaw;
+	tf::Matrix3x3(q_rel_rot).getRPY(droll, dpitch, dyaw);
+	double diff_angle_deg = q_rel_rot.getAngle()/M_PI*180.0;
+	/*print*/
+	/* std::cout << "d_xyz : "  */
+	/* 	<< dx << ", " */
+	/* 	<< dy << ", " */
+	/* 	<< dz << std::endl; */
+	/* std::cout << "d_rpy : "  */
+	/* 	<< droll/M_PI*180.0 << ", " */
+	/* 	<< dpitch/M_PI*180.0 << ", " */
+	/* 	<< dyaw/M_PI*180.0 << std::endl; */
+	/*judge*/
+	if(diff_position_m > th_diff_position_m)	return true;
+	if(diff_angle_deg > th_diff_angle_deg)	return true;
 	return false;
 }
 
@@ -149,14 +175,27 @@ void SaveImageWithIMU::Record(cv_bridge::CvImagePtr cv_ptr)
 	/*image*/
 	std::string save_img_name = save_dir_path + "/img" + std::to_string(counter) + ".jpg";
 	cv::imwrite(save_img_name, cv_ptr->image);
-	/* cv::imshow("img", cv_ptr->image); */
-	/* cv::waitKey(0); */
 	/*imu*/
 	file 
 		<< imu.linear_acceleration.x << "," 
 		<< imu.linear_acceleration.y << "," 
 		<< imu.linear_acceleration.z << ","
 		<< save_img_name << std::endl;
+	/*print*/
+	double r, p, y;
+	tf::Quaternion q;
+	quaternionMsgToTF(odom_now.pose.pose.orientation, q);
+	tf::Matrix3x3(q).getRPY(r, p, y);
+	std::cout << "save point : " 
+		<< odom_now.pose.pose.position.x << ", "
+		<< odom_now.pose.pose.position.y << ", "
+		<< odom_now.pose.pose.position.z << ", "
+		<< r/M_PI*180.0 << ", " 
+		<< p/M_PI*180.0 << ", " 
+		<< y/M_PI*180.0 << std::endl;
+	/*count*/
+	++counter;
+	odom_last = odom_now;
 }
 
 int main(int argc, char** argv)
