@@ -24,7 +24,7 @@
 		<remap from="/odom" to="/tinypower/odom/republished"/>
 		<param name="save_dir_path" type="string" value="$(find save_dataset)/dataset"/>
 		<!-- <param name="save_csv_name" type="string" value="$(find save_dataset)/dataset/save_image_with_imu.csv"/> -->
-		<param name="save_data_limit" type="int" value="50"/>
+		<param name="save_data_limit" type="int" value="100"/>
 		<param name="th_diff_position_m" type="double" value="5.0"/>
 		<param name="th_diff_angle_deg" type="double" value="10.0"/>
 	</node>
