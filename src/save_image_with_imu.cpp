@@ -42,7 +42,6 @@ class SaveImageWithIMU{
 	public:
 		SaveImageWithIMU();
 		void InitializePose(geometry_msgs::PoseStamped& pose);
-		void CallbackInipose(const geometry_msgs::QuaternionConstPtr& msg);
 		void CallbackIMU(const sensor_msgs::ImuConstPtr& msg);
 		void CallbackImage(const sensor_msgs::ImageConstPtr& msg);
 		void CallbackOdom(const nav_msgs::OdometryConstPtr& msg);
@@ -94,7 +93,8 @@ void SaveImageWithIMU::InitializePose(geometry_msgs::PoseStamped& pose)
 
 void SaveImageWithIMU::CallbackIMU(const sensor_msgs::ImuConstPtr& msg)
 {
-	/* std::cout << "msg->orientation = " << msg->orientation << std::endl; */
+	imu = *msg;
+
 	pose.header.stamp = msg->header.stamp;
 	pose.pose.orientation = msg->orientation;
 
@@ -186,13 +186,17 @@ void SaveImageWithIMU::Record(cv_bridge::CvImagePtr cv_ptr)
 	tf::Quaternion q;
 	quaternionMsgToTF(odom_now.pose.pose.orientation, q);
 	tf::Matrix3x3(q).getRPY(r, p, y);
-	std::cout << "save point : " 
+	std::cout << counter << " save point: " 
 		<< odom_now.pose.pose.position.x << ", "
 		<< odom_now.pose.pose.position.y << ", "
 		<< odom_now.pose.pose.position.z << ", "
 		<< r/M_PI*180.0 << ", " 
 		<< p/M_PI*180.0 << ", " 
 		<< y/M_PI*180.0 << std::endl;
+	std::cout << "imu acc: " 
+		<< imu.linear_acceleration.x << "," 
+		<< imu.linear_acceleration.y << "," 
+		<< imu.linear_acceleration.z << std::endl;
 	/*count*/
 	++counter;
 	odom_last = odom_now;
