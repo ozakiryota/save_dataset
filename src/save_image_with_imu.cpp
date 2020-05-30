@@ -5,7 +5,6 @@
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/Image.h>
 #include <nav_msgs/Odometry.h>
-#include <geometry_msgs/PoseStamped.h>
 /*C*/
 #include <fstream>
 /*opencv*/
@@ -21,13 +20,10 @@ class SaveImageWithIMU{
 		ros::Subscriber sub_imu;
 		ros::Subscriber sub_image;
 		ros::Subscriber sub_odom;
-		/*publisher*/
-		ros::Publisher pub_pose;
 		/*objects*/
 		sensor_msgs::Imu imu;
 		nav_msgs::Odometry odom_now;
 		nav_msgs::Odometry odom_last;
-		geometry_msgs::PoseStamped pose;
 		std::ofstream file;
 		/*counter*/
 		int counter = 0;
@@ -41,7 +37,6 @@ class SaveImageWithIMU{
 		double th_diff_angle_deg;
 	public:
 		SaveImageWithIMU();
-		void InitializePose(geometry_msgs::PoseStamped& pose);
 		void CallbackIMU(const sensor_msgs::ImuConstPtr& msg);
 		void CallbackImage(const sensor_msgs::ImageConstPtr& msg);
 		void CallbackOdom(const nav_msgs::OdometryConstPtr& msg);
@@ -69,10 +64,7 @@ SaveImageWithIMU::SaveImageWithIMU()
 	sub_imu = nh.subscribe("/imu/data", 1, &SaveImageWithIMU::CallbackIMU, this);
 	sub_image = nh.subscribe("/image_raw", 1, &SaveImageWithIMU::CallbackImage, this);
 	sub_odom = nh.subscribe("/odom", 1, &SaveImageWithIMU::CallbackOdom, this);
-	/*publisher*/
-	pub_pose = nh.advertise<geometry_msgs::PoseStamped>("/pose", 1);
 	/*initialize*/
-	InitializePose(pose);
 	file.open(save_csv_path);
 	if(!file){
 		std::cout << "Cannot open " << save_csv_path << std::endl;
@@ -80,30 +72,13 @@ SaveImageWithIMU::SaveImageWithIMU()
 	}
 }
 
-void SaveImageWithIMU::InitializePose(geometry_msgs::PoseStamped& pose)
-{
-	pose.pose.position.x = 0.0;
-	pose.pose.position.y = 0.0;
-	pose.pose.position.z = 0.0;
-	pose.pose.orientation.x = 0.0;
-	pose.pose.orientation.y = 0.0;
-	pose.pose.orientation.z = 0.0;
-	pose.pose.orientation.w = 1.0;
-}
-
 void SaveImageWithIMU::CallbackIMU(const sensor_msgs::ImuConstPtr& msg)
 {
 	imu = *msg;
-
-	pose.header.stamp = msg->header.stamp;
-	pose.pose.orientation = msg->orientation;
-
-	Publication();
 }
 
 void SaveImageWithIMU::CallbackImage(const sensor_msgs::ImageConstPtr& msg)
 {
-	/* std::cout << "msg->encoding = " << msg->encoding << std::endl; */
 	if(counter < save_data_limit){
 		if(got_first_cb_odom && HasOdomDiff(odom_now, odom_last)){
 			try{
@@ -119,25 +94,17 @@ void SaveImageWithIMU::CallbackImage(const sensor_msgs::ImageConstPtr& msg)
 		file.close();
 		std::cout << save_csv_path << " was closed" << std::endl;
 	}
+
+	/* std::cout << "msg->encoding = " << msg->encoding << std::endl; */
 }
 
 void SaveImageWithIMU::CallbackOdom(const nav_msgs::OdometryConstPtr& msg)
 {
-	/* std::cout << "msg->twist.twist.linear.x = " << msg->twist.twist.linear.x << std::endl; */
-	pose.header.stamp = msg->header.stamp;
-	pose.header.frame_id = msg->header.frame_id;
-
+	odom_now = *msg;
 	if(!got_first_cb_odom){
 		odom_last = *msg;
 		got_first_cb_odom = true;
 	}
-	odom_now = *msg;
-}
-
-void SaveImageWithIMU::Publication(void)
-{
-	/*publish*/
-	pub_pose.publish(pose);
 }
 
 bool SaveImageWithIMU::HasOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2)
