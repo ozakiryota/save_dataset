@@ -4,7 +4,7 @@
 
 	<!-- rosbag -->
 	<node pkg="rosbag" type="play" name="player" args="--clock /home/amsl/ozaki/bagfiles/infant/mocap/0113_infant/2019-01-13-15-46-58.bag -s 60 -r 2"/>
-	<!-- <node pkg="rosbag" type="play" name="player" args="&#45;&#45;clock /home/amsl/ozaki/bagfiles/infant/mocap/0113_infant/2019&#45;01&#45;13&#45;15&#45;46&#45;58.bag &#45;s 130"/> -->
+	<!-- <node pkg="rosbag" type="play" name="player" args="&#45;&#45;clock /home/amsl/ozaki/bagfiles/infant/mocap/0127_infant/2019&#45;01&#45;27&#45;19&#45;23&#45;10.bag &#45;s 60 &#45;r 2"/> -->
 
 	<!-- semi sensor driver -->
 	<node pkg="image_transport" type="republish" name="republish" args="compressed raw">
@@ -22,7 +22,7 @@
 	<node pkg="save_dataset" name="save_image_with_imu" type="save_image_with_imu" output="screen">
 		<remap from="/image_raw" to="/camera/color/image_raw/decompressed"/>
 		<remap from="/odom" to="/tinypower/odom/republished"/>
-		<param name="save_dir_path" type="string" value="$(find save_dataset)/dataset"/>
+		<param name="save_dir_path" type="string" value="$(find save_dataset)/dataset/train"/>
 		<!-- <param name="save_csv_name" type="string" value="$(find save_dataset)/dataset/save_image_with_imu.csv"/> -->
 		<param name="save_data_limit" type="int" value="100"/>
 		<param name="th_diff_position_m" type="double" value="5.0"/>
