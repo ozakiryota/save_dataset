@@ -32,6 +32,7 @@ class SaveImageWithIMU{
 		/*param*/
 		std::string save_dir_path;
 		std::string save_csv_path;
+		std::string save_img_name;
 		int save_data_limit;
 		double th_diff_position_m;
 		double th_diff_angle_deg;
@@ -53,6 +54,8 @@ SaveImageWithIMU::SaveImageWithIMU()
 	std::cout << "save_dir_path = " << save_dir_path << std::endl;
 	nhPrivate.param("save_csv_path", save_csv_path, std::string(save_dir_path + "/save_image_with_imu.csv"));
 	std::cout << "save_csv_path = " << save_csv_path << std::endl;
+	nhPrivate.param("save_img_name", save_img_name, std::string("img"));
+	std::cout << "save_img_name = " << save_img_name << std::endl;
 	nhPrivate.param("save_data_limit", save_data_limit, 10);
 	std::cout << "save_data_limit = " << save_data_limit << std::endl;
 	nhPrivate.param("th_diff_position_m", th_diff_position_m, 10.0);
@@ -65,7 +68,7 @@ SaveImageWithIMU::SaveImageWithIMU()
 	sub_image = nh.subscribe("/image_raw", 1, &SaveImageWithIMU::CallbackImage, this);
 	sub_odom = nh.subscribe("/odom", 1, &SaveImageWithIMU::CallbackOdom, this);
 	/*initialize*/
-	file.open(save_csv_path);
+	file.open(save_csv_path, std::ios::app);
 	if(!file){
 		std::cout << "Cannot open " << save_csv_path << std::endl;
 		exit(1);
@@ -139,15 +142,21 @@ bool SaveImageWithIMU::HasOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odometry 
 
 void SaveImageWithIMU::Record(cv_bridge::CvImagePtr cv_ptr)
 {
-	/*image*/
-	std::string save_img_name = save_dir_path + "/img" + std::to_string(counter) + ".jpg";
-	cv::imwrite(save_img_name, cv_ptr->image);
-	/*imu*/
+	/*check*/
+	std::string save_img_path = save_dir_path + "/" + save_img_name + std::to_string(counter) + ".jpg";
+	std::ifstream ifs(save_img_path);
+	if(ifs.is_open()){
+		std::cout << save_img_path << " already exists" << std::endl;
+		exit(1);
+	}
+	/*save image*/
+	cv::imwrite(save_img_path, cv_ptr->image);
+	/*record imu*/
 	file 
 		<< imu.linear_acceleration.x << "," 
 		<< imu.linear_acceleration.y << "," 
 		<< imu.linear_acceleration.z << ","
-		<< save_img_name << std::endl;
+		<< save_img_path << std::endl;
 	/*print*/
 	double r, p, y;
 	tf::Quaternion q;
