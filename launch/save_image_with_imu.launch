@@ -3,14 +3,14 @@
 	<param name="use_sim_time" value="true"/>
 
 	<!-- rosbag -->
-	<!-- <node pkg="rosbag" type="play" name="player" args="&#45;&#45;clock /home/amsl/ozaki/bagfiles/infant/mocap/0113_infant/2019&#45;01&#45;13&#45;15&#45;46&#45;58.bag &#45;s 60 &#45;r 3"/> -->
+	<node pkg="rosbag" type="play" name="player" args="--clock /home/amsl/ozaki/bagfiles/infant/mocap/0113_infant/2019-01-13-15-46-58.bag -s 60 -r 3"/>
 	<!-- <node pkg="rosbag" type="play" name="player" args="&#45;&#45;clock /home/amsl/ozaki/bagfiles/infant/mocap/0127_infant/2019&#45;01&#45;27&#45;19&#45;23&#45;10.bag &#45;s 60 &#45;r 2"/> -->
-	<node pkg="rosbag" type="play" name="player" args="--clock /home/amsl/ozaki/bagfiles/infant/tsukuba_challenge/ikuta/2019-04-18-12-48-22.bag -s 0 -r 2"/>
+	<!-- <node pkg="rosbag" type="play" name="player" args="&#45;&#45;clock /home/amsl/ozaki/bagfiles/infant/tsukuba_challenge/tsukuba/2018&#45;09&#45;15&#45;14&#45;08&#45;49.bag &#45;s 90 &#45;r 2"/> -->
 
 	<!-- semi sensor driver -->
 	<node pkg="image_transport" type="republish" name="republish" args="compressed raw">
-		<!-- <remap from="in" to="/camera/color/image_raw"/> -->
-		<remap from="in" to="/camera/rgb/resized_image"/>
+		<remap from="in" to="/camera/color/image_raw"/>
+		<!-- <remap from="in" to="/camera/rgb/resized_image"/> -->
 		<remap from="out" to="/camera/color/image_raw/decompressed"/>
 	</node>
 	<node pkg="msg_conversion" name="infant_odometry_republish" type="infant_odometry_republish" output="screen">
@@ -26,7 +26,7 @@
 		<remap from="/odom" to="/tinypower/odom/republished"/>
 		<param name="save_dir_path" type="string" value="$(find save_dataset)/dataset/train"/>
 		<!-- <param name="save_csv_name" type="string" value="$(find save_dataset)/dataset/save_image_with_imu.csv"/> -->
-		<param name="save_img_name" type="string" value="2019-04-18-12-48-22_"/>
+		<param name="save_img_name" type="string" value="2019-01-13-15-46-58_"/>
 		<param name="save_data_limit" type="int" value="500"/>
 		<param name="th_diff_position_m" type="double" value="3.0"/>
 		<param name="th_diff_angle_deg" type="double" value="5.0"/>
