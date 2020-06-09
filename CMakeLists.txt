@@ -191,5 +191,9 @@ include_directories(
 # catkin_add_nosetests(test)
 add_executable(imu_visualize_test src/imu_visualize_test.cpp)
 target_link_libraries(imu_visualize_test ${catkin_LIBRARIES})
+#
 add_executable(save_image_with_imu src/save_image_with_imu.cpp)
 target_link_libraries(save_image_with_imu ${catkin_LIBRARIES})
+#
+# add_executable(pc2_to_image src/pc2_to_image.cpp)
+# target_link_libraries(pc2_to_image ${catkin_LIBRARIES})
