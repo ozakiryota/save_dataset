@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   cv_bridge
+  PCL
 )
 
 ## System dependencies are found with CMake's conventions
@@ -118,6 +119,7 @@ catkin_package(
 # include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -195,5 +197,5 @@ target_link_libraries(imu_visualize_test ${catkin_LIBRARIES})
 add_executable(save_imu_camera src/save_imu_camera.cpp)
 target_link_libraries(save_imu_camera ${catkin_LIBRARIES})
 #
-# add_executable(pc2_to_image src/pc2_to_image.cpp)
-# target_link_libraries(pc2_to_image ${catkin_LIBRARIES})
+add_executable(save_imu_camera_velodyne src/save_imu_camera_velodyne.cpp)
+target_link_libraries(save_imu_camera_velodyne ${catkin_LIBRARIES})
