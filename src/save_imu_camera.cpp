@@ -56,11 +56,11 @@ SaveImageWithIMU::SaveImageWithIMU()
 	std::cout << "_save_csv_path = " << _save_csv_path << std::endl;
 	_nhPrivate.param("save_img_name", _save_img_name, std::string("img"));
 	std::cout << "_save_img_name = " << _save_img_name << std::endl;
-	_nhPrivate.param("_save_data_limit", _save_data_limit, 10);
+	_nhPrivate.param("save_data_limit", _save_data_limit, 10);
 	std::cout << "_save_data_limit = " << _save_data_limit << std::endl;
-	_nhPrivate.param("_th_diff_position_m", _th_diff_position_m, 10.0);
+	_nhPrivate.param("th_diff_position_m", _th_diff_position_m, 10.0);
 	std::cout << "_th_diff_position_m = " << _th_diff_position_m << std::endl;
-	_nhPrivate.param("_th_diff_angle_deg", _th_diff_angle_deg, 30.0);
+	_nhPrivate.param("th_diff_angle_deg", _th_diff_angle_deg, 30.0);
 	std::cout << "_th_diff_angle_deg = " << _th_diff_angle_deg << std::endl;
 
 	/*subscriber*/
