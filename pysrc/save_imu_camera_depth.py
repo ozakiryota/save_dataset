@@ -40,6 +40,7 @@ class SaveImuCameraDepth:
         current_dir = os.path.dirname(os.path.abspath(__file__))
         default_rootpath = os.path.join(current_dir, "../dataset/imu_camera_velodyne/tmp")
         self.rootpath = rospy.get_param("/rootpath", default_rootpath)
+        self.filename = rospy.get_param("/filename", "data_")
         ## counter
         self.counter = 0
         ## threshold
@@ -130,10 +131,10 @@ class SaveImuCameraDepth:
         print("self.imgcolor_cv.shape = ", self.imgcolor_cv.shape)
         print("self.imgdepth_cv.shape = ", self.imgdepth_cv.shape)
         ## color
-        save_imgcolor_name = "color_" + str(self.counter) + ".jpg"
+        save_imgcolor_name = self.filename + "color_" + str(self.counter) + ".jpg"
         self.saveImageColor(self.imgcolor_cv, save_imgcolor_name)
         ## depth
-        save_imgdepth_name = "depth_" + str(self.counter) + ".npy"
+        save_imgdepth_name = self.filename + "depth_" + str(self.counter) + ".npy"
         self.saveImageDepth(self.imgdepth_cv, save_imgdepth_name)
         ## IMU with images
         self.saveCSV(save_imgcolor_name, save_imgdepth_name)
@@ -143,11 +144,17 @@ class SaveImuCameraDepth:
 
     def saveImageColor(self, img_cv, save_name):
         save_path = os.path.join(self.rootpath, save_name)
+        if os.path.isfile(save_path):
+            print(save_path , " already exists")
+            os._exit(1)
         img_pil = Image.fromarray(img_cv)
         img_pil.save(save_path)
 
     def saveImageDepth(self, img_cv, save_name):
         save_path = os.path.join(self.rootpath, save_name)
+        if os.path.isfile(save_path):
+            print(save_path , " already exists")
+            os._exit(1)
         np.save(save_path, img_cv)
 
     def saveCSV(self, save_imgcolor_name, save_imgdepth_name):
