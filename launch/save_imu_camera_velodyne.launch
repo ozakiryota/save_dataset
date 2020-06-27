@@ -26,7 +26,7 @@
 	<node pkg="save_dataset" name="save_imu_camera_velodyne" type="save_imu_camera_velodyne" output="screen">
 		<remap from="/image_raw" to="/decompressed_image"/>
 		<remap from="/odom" to="/tinypower/odom/republished"/>
-		<param name="save_dir_path" type="string" value="$(find save_dataset)/dataset/imu_camera_velodyne/tmp"/>
+		<param name="save_dir_path" type="string" value="$(find save_dataset)/dataset/imu_camera_velodyne/val"/>
 		<!-- <param name="save_csv_name" type="string" value="$(find save_dataset)/dataset/save_imu_camera_velodyne.csv"/> -->
 		<!-- <param name="save_imgcolor_name" type="string" value="color_"/> -->
 		<!-- <param name="save_imgdepth_name" type="string" value="depth_"/> -->
