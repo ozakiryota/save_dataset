@@ -20,6 +20,7 @@
 	<node pkg="msg_conversion" name="infant_odometry_republish" type="infant_odometry_republish" output="screen"/>
 
 	<!-- MAIN -->
+	<param name="filename" value="2019-01-13-15-46-58"/>
 	<node pkg="save_dataset" name="save_imu_camera_depth" type="save_imu_camera_depth.py" output="screen">
 		<remap from="/image_raw" to="/decompressed_image"/>
 		<remap from="/depth_image" to="/depth_image/64fc1"/>

@@ -39,13 +39,18 @@ class SaveImuCameraDepth:
         ## path
         current_dir = os.path.dirname(os.path.abspath(__file__))
         default_rootpath = os.path.join(current_dir, "../dataset/imu_camera_velodyne/tmp")
-        self.rootpath = rospy.get_param("/rootpath", default_rootpath)
-        self.filename = rospy.get_param("/filename", "data_")
+        self.rootpath = rospy.get_param("rootpath", default_rootpath)
+        self.filename = rospy.get_param("filename", "data_")
         ## counter
         self.counter = 0
         ## threshold
         self.th_diff_position_m = rospy.get_param("th_diff_position_m", 3.0)
         self.th_diff_angle_deg = rospy.get_param("th_diff_angle_deg", 5.0)
+        ## print parameter
+        print("self.rootpath = ", self.rootpath)
+        print("self.filename = ", self.filename)
+        print("self.th_diff_position_m = ", self.th_diff_position_m)
+        print("self.th_diff_angle_deg = ", self.th_diff_angle_deg)
 
     def callbackIMU(self, msg):
         self.imu = msg
