@@ -20,7 +20,6 @@ class SaveImuCameraDepth:
         ## subscriber
         self.sub_imu = rospy.Subscriber("/imu/data", Imu, self.callbackIMU)
         self.sub_imgcolor = rospy.Subscriber("/image_raw", ImageMsg, self.callbackImageColor)
-        self.sub_imgdepth = rospy.Subscriber("/depth_image", ImageMsg, self.callbackImageDepth)
         self.sub_odom = rospy.Subscriber("/odom", Odometry, self.callbackOdom)
         ## msg
         self.imu = Imu()
@@ -30,15 +29,13 @@ class SaveImuCameraDepth:
         self.bridge = CvBridge()
         ## img
         self.imgcolor_cv = np.empty(0)
-        self.imgdepth_cv = np.empty(0)
         ## flag
         self.got_first_imu = False
         self.got_first_imgcolor = False
-        self.got_first_imgdepth = False
         self.got_first_odom = False
         ## path
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        default_rootpath = os.path.join(current_dir, "../dataset/imu_camera_velodyne/tmp")
+        default_rootpath = os.path.join(current_dir, "../dataset/imu_camera/tmp")
         self.rootpath = rospy.get_param("rootpath", default_rootpath)
         self.filename = rospy.get_param("filename", "data_")
         ## counter
@@ -64,18 +61,6 @@ class SaveImuCameraDepth:
             self.imgcolor_cv = self.bridge.imgmsg_to_cv2(msg, msg.encoding)
             if not self.got_first_imgcolor:
                 self.got_first_imgcolor = True
-            # if self.isReadyToSave():
-            #     self.saveData()
-        except CvBridgeError as e:
-            print(e)
-
-    def callbackImageDepth(self, msg):
-        ## CV64FC1
-        # print(msg.encoding)
-        try:
-            self.imgdepth_cv = self.bridge.imgmsg_to_cv2(msg, msg.encoding)
-            if not self.got_first_imgdepth:
-                self.got_first_imgdepth = True
             if self.isReadyToSave():
                 self.saveData()
         except CvBridgeError as e:
@@ -93,8 +78,6 @@ class SaveImuCameraDepth:
         if not self.got_first_odom:
             return False
         if not self.got_first_imgcolor:
-            return False
-        if not self.got_first_imgdepth:
             return False
 
         if self.hasOdomDiff(self.odom_now, self.odom_last):
@@ -134,15 +117,11 @@ class SaveImuCameraDepth:
         print("SAVED!")
         print("self.counter = ", self.counter)
         print("self.imgcolor_cv.shape = ", self.imgcolor_cv.shape)
-        print("self.imgdepth_cv.shape = ", self.imgdepth_cv.shape)
         ## color
         save_imgcolor_name = self.filename + "color_" + str(self.counter) + ".jpg"
         self.saveImageColor(self.imgcolor_cv, save_imgcolor_name)
-        ## depth
-        save_imgdepth_name = self.filename + "depth_" + str(self.counter) + ".npy"
-        self.saveImageDepth(self.imgdepth_cv, save_imgdepth_name)
         ## IMU with images
-        self.saveCSV(save_imgcolor_name, save_imgdepth_name)
+        self.saveCSV(save_imgcolor_name)
         ## count
         self.counter += 1
         self.odom_last = self.odom_now
@@ -155,15 +134,8 @@ class SaveImuCameraDepth:
         img_pil = Image.fromarray(img_cv)
         img_pil.save(save_path)
 
-    def saveImageDepth(self, img_cv, save_name):
-        save_path = os.path.join(self.rootpath, save_name)
-        if os.path.isfile(save_path):
-            print(save_path , " already exists")
-            os._exit(1)
-        np.save(save_path, img_cv)
-
-    def saveCSV(self, save_imgcolor_name, save_imgdepth_name):
-        save_csv_path = os.path.join(self.rootpath, "imu_color_depth.csv")
+    def saveCSV(self, save_imgcolor_name):
+        save_csv_path = os.path.join(self.rootpath, "imu_color.csv")
         with open(save_csv_path, "a") as csvfile:
             acc = self.QuatToAcc([
                 self.imu.orientation.x,
@@ -179,8 +151,7 @@ class SaveImuCameraDepth:
                 acc[0],
                 acc[1],
                 acc[2],
-                save_imgcolor_name,
-                save_imgdepth_name
+                save_imgcolor_name
             ])
 
     # def cvToPIL(self, img_cv):
@@ -223,9 +194,9 @@ class SaveImuCameraDepth:
 
 
 def main():
-    rospy.init_node('save_imu_camera_depth', anonymous=True)
+    rospy.init_node('save_imu_camera', anonymous=True)
     
-    save_imu_camera_depth = SaveImuCameraDepth()
+    save_imu_camera = SaveImuCameraDepth()
 
     rospy.spin()
 

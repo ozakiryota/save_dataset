@@ -1,0 +1,12 @@
+<launch>
+	<!-- rviz -->
+	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find save_dataset)/rviz_config/save_imu_camera_airsim.rviz"/>
+
+	<!-- MAIN -->
+	<param name="filename" value="airsim_"/>
+	<node pkg="save_dataset" name="save_imu_camera" type="save_imu_camera.py" output="screen">
+		<remap from="/imu/data" to="/airsim_node/drone_1/imu/Imu"/>
+		<remap from="/image_raw" to="/airsim_node/drone_1/front_center_custom/Scene"/>
+		<remap from="/odom" to="/airsim_node/drone_1/odom_local_ned"/>
+	</node>
+</launch>
