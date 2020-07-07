@@ -62,6 +62,8 @@ class SaveImuCameraDepth:
         # print(msg.encoding)
         try:
             self.imgcolor_cv = self.bridge.imgmsg_to_cv2(msg, msg.encoding)
+            if msg.encoding == "bgr8":
+                self.imgcolor_cv = self.bgr8Torgb8(self.imgcolor_cv)
             if not self.got_first_imgcolor:
                 self.got_first_imgcolor = True
             # if self.isReadyToSave():
@@ -182,6 +184,11 @@ class SaveImuCameraDepth:
                 save_imgcolor_name,
                 save_imgdepth_name
             ])
+
+    def bgr8Torgb8(self, img_cv_bgr):
+        img_cv_copy = img_cv_bgr.copy()
+        img_cv_rgb = img_cv_copy[:, :, ::-1]
+        return img_cv_rgb
 
     # def cvToPIL(self, img_cv):
     #     img_cv_copy = img_cv.copy()
