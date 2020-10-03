@@ -49,8 +49,8 @@ class SaveImageWithIMU{
 		int _save_data_limit;
 		double _th_diff_position_m;
 		double _th_diff_angle_deg;
-		double _th_still_linear_acceleration;
-		double _th_still_angular_velocity;
+		double _th_still_position_m;
+		double _th_still_angle_deg;
 		int _th_still_counter;
 		int _num_cameras;
 	public:
@@ -58,7 +58,6 @@ class SaveImageWithIMU{
 		void callbackIMU(const sensor_msgs::ImuConstPtr& msg);
 		void callbackOdom(const nav_msgs::OdometryConstPtr& msg);
 		void callbackImage(const ros::MessageEvent<sensor_msgs::Image const>& event);
-		bool isStill(void);
 		bool hasOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2);
 		int getCameraIndex(std::string topic_name);
 		bool gotAllNewImages(void);
@@ -82,10 +81,10 @@ SaveImageWithIMU::SaveImageWithIMU()
 	std::cout << "_th_diff_position_m = " << _th_diff_position_m << std::endl;
 	_nhPrivate.param("th_diff_angle_deg", _th_diff_angle_deg, 30.0);
 	std::cout << "_th_diff_angle_deg = " << _th_diff_angle_deg << std::endl;
-	_nhPrivate.param("th_still_linear_acceleration", _th_still_linear_acceleration, 0.05);
-	std::cout << "_th_still_linear_acceleration = " << _th_still_linear_acceleration << std::endl;
-	_nhPrivate.param("th_still_angular_velocity", _th_still_angular_velocity, 0.5);
-	std::cout << "_th_still_angular_velocity = " << _th_still_angular_velocity << std::endl;
+	_nhPrivate.param("th_still_position_m", _th_still_position_m, 0.001);
+	std::cout << "_th_still_position_m = " << _th_still_position_m << std::endl;
+	_nhPrivate.param("th_still_angle_deg", _th_still_angle_deg, 0.1);
+	std::cout << "_th_still_angle_deg = " << _th_still_angle_deg << std::endl;
 	_nhPrivate.param("th_still_counter", _th_still_counter, 10);
 	std::cout << "_th_still_counter = " << _th_still_counter << std::endl;
 	_nhPrivate.param("num_cameras", _num_cameras, 1);
@@ -118,22 +117,11 @@ void SaveImageWithIMU::callbackIMU(const sensor_msgs::ImuConstPtr& msg)
 {
 	_imu = *msg;
 	if(!_got_first_imu)	_got_first_imu = true;
-	_is_still = isStill();
-
-	/*print*/
-	std::cout << "_still_counter = " << _still_counter << std::endl;
-	std::cout << "imu acc: " 
-		<< _imu.linear_acceleration.x << "," 
-		<< _imu.linear_acceleration.y << "," 
-		<< _imu.linear_acceleration.z << std::endl;
-	std::cout << "imu angvel: " 
-		<< _imu.angular_velocity.x << "," 
-		<< _imu.angular_velocity.y << "," 
-		<< _imu.angular_velocity.z << std::endl;
 }
 
 void SaveImageWithIMU::callbackOdom(const nav_msgs::OdometryConstPtr& msg)
 {
+	if(_got_first_odom)	_is_still = isStill(*msg, _odom_now);
 	_odom_now = *msg;
 	if(!_got_first_odom){
 		_odom_last = *msg;
@@ -167,23 +155,12 @@ void SaveImageWithIMU::callbackImage(const ros::MessageEvent<sensor_msgs::Image 
 	}
 }
 
-bool SaveImageWithIMU::isStill(void)
+bool SaveImageWithIMU::isStill(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2)
 {
-	if(
-		abs(_imu.linear_acceleration.x) < _th_still_linear_acceleration &&
-		abs(_imu.linear_acceleration.y) < _th_still_linear_acceleration &&
-		abs(_imu.linear_acceleration.z) < _th_still_linear_acceleration &&
-		abs(_imu.angular_velocity.x) < _th_still_angular_velocity &&
-		abs(_imu.angular_velocity.y) < _th_still_angular_velocity &&
-		abs(_imu.angular_velocity.z) < _th_still_angular_velocity
-	){
-		++_still_counter;
-	}
-	else	_still_counter = 0;
-
-
-	if(_still_counter > _th_still_counter)	return true;
-	else	return false;
+	double diff_position_m, diff_angle_deg;
+	getOdomDiff(odom1, odom2, diff_position_m, diff_angle_deg);
+	if(diff_position_m < _th_still_position_m && diff_angle_deg < _th_still_angle_deg)	_is_still = true;
+	else	_is_still = false;
 }
 
 bool SaveImageWithIMU::hasOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2)
@@ -214,6 +191,32 @@ bool SaveImageWithIMU::hasOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odometry 
 	if(diff_position_m > _th_diff_position_m)	return true;
 	if(diff_angle_deg > _th_diff_angle_deg)	return true;
 	return false;
+}
+
+void SaveImageWithIMU::getOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2, double& diff_position_m, double& diff_angle_deg)
+{
+	/*position*/
+	double dx = odom2.pose.pose.position.x - odom1.pose.pose.position.x;
+	double dy = odom2.pose.pose.position.y - odom1.pose.pose.position.y;
+	double dz = odom2.pose.pose.position.z - odom1.pose.pose.position.z;
+	diff_position_m = sqrt(dx*dx + dy*dy + dz*dz);
+	/*rotation*/
+	tf::Quaternion q1, q2, q_rel_rot;
+	quaternionMsgToTF(odom1.pose.pose.orientation, q1);
+	quaternionMsgToTF(odom2.pose.pose.orientation, q2);
+	q_rel_rot = q2.inverse()*q1;
+	double droll, dpitch, dyaw;
+	tf::Matrix3x3(q_rel_rot).getRPY(droll, dpitch, dyaw);
+	diff_angle_deg = q_rel_rot.getAngle()/M_PI*180.0;
+	/*print*/
+	//std::cout << "d_xyz : " 
+	//	<< dx << ", "
+	//	<< dy << ", "
+	//	<< dz << std::endl;
+	//std::cout << "d_rpy : " 
+	//	<< droll/M_PI*180.0 << ", "
+	//	<< dpitch/M_PI*180.0 << ", "
+	//	<< dyaw/M_PI*180.0 << std::endl;
 }
 
 int SaveImageWithIMU::getCameraIndex(std::string topic_name)
