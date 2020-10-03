@@ -199,3 +199,6 @@ target_link_libraries(save_imu_camera ${catkin_LIBRARIES})
 #
 add_executable(save_imu_camera_velodyne src/save_imu_camera_velodyne.cpp)
 target_link_libraries(save_imu_camera_velodyne ${catkin_LIBRARIES})
+#
+add_executable(save_imu_multicamera src/save_imu_multicamera.cpp)
+target_link_libraries(save_imu_multicamera ${catkin_LIBRARIES})

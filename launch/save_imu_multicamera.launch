@@ -1,0 +1,50 @@
+<launch>
+	<!-- global rosparam -->
+	<param name="use_sim_time" value="true"/>
+
+	<!-- rosbag -->
+	<node pkg="rosbag" type="play" name="player" args="--clock /home/amsl/ozaki/bagfiles/ccv2/20201002_214853.bag"/>
+
+	<!-- semi sensor driver -->
+	<node pkg="image_transport" type="republish" name="republish_fc" args="compressed raw">
+		<remap from="in" to="/realsense_fc/color/image_raw"/>
+		<remap from="out" to="/realsense_fc/color/image_raw"/>
+	</node>
+	<node pkg="image_transport" type="republish" name="republish_fr" args="compressed raw">
+		<remap from="in" to="/realsense_fr/color/image_raw"/>
+		<remap from="out" to="/realsense_fr/color/image_raw"/>
+	</node>
+	<node pkg="image_transport" type="republish" name="republish_fl" args="compressed raw">
+		<remap from="in" to="/realsense_fl/color/image_raw"/>
+		<remap from="out" to="/realsense_fl/color/image_raw"/>
+	</node>
+	<node pkg="image_transport" type="republish" name="republish_rr" args="compressed raw">
+		<remap from="in" to="/realsense_rr/color/image_raw"/>
+		<remap from="out" to="/realsense_rr/color/image_raw"/>
+	</node>
+	<node pkg="image_transport" type="republish" name="republish_rl" args="compressed raw">
+		<remap from="in" to="/realsense_rl/color/image_raw"/>
+		<remap from="out" to="/realsense_rl/color/image_raw"/>
+	</node>
+
+	<!-- rviz -->
+	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find save_dataset)/rviz_config/save_imu_multicamera.rviz"/>
+
+	<!-- main -->
+	<node pkg="save_dataset" type="save_imu_multicamera" name="save_imu_multicamera" output="screen">
+		<param name="save_dir_path" type="string" value="$(find save_dataset)/dataset/tmp"/>
+		<!-- <param name="save_csv_name" type="string" value="$(find save_dataset)/dataset/save_imu_multicamera.csv"/> -->
+		<param name="save_img_name" type="string" value="20201001_215149_"/>
+		<param name="save_data_limit" type="int" value="1000"/>
+		<param name="th_diff_position_m" type="double" value="3.0"/>
+		<param name="th_diff_angle_deg" type="double" value="5.0"/>
+		<param name="num_cameras" type="int" value="5"/>
+		<param name="image0" type="string" value="/realsense_fc/color/image_raw"/>
+		<param name="image1" type="string" value="/realsense_fl/color/image_raw"/>
+		<param name="image2" type="string" value="/realsense_rl/color/image_raw"/>
+		<param name="image3" type="string" value="/realsense_rr/color/image_raw"/>
+		<param name="image4" type="string" value="/realsense_fr/color/image_raw"/>
+		<!-- <remap from="/image0" to="/realsense_fc/color/image_raw"/> -->
+		<!-- <remap from="/image1" to="/realsense_fr/color/image_raw"/> -->
+	</node>
+</launch>
