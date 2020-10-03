@@ -57,6 +57,16 @@ Visualization Manager:
       Position Tolerance: 0.100000001
       Topic: /odom
       Value: true
+    - Angle Tolerance: 0.100000001
+      Class: rviz/Odometry
+      Color: 0; 0; 255
+      Enabled: true
+      Keep: 100
+      Length: 1
+      Name: Odometry
+      Position Tolerance: 0.100000001
+      Topic: /gyrodometry
+      Value: true
     - Class: rviz/Image
       Enabled: true
       Image Topic: /realsense_fc/color/image_raw

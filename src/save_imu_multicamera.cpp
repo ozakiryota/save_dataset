@@ -58,7 +58,9 @@ class SaveImageWithIMU{
 		void callbackIMU(const sensor_msgs::ImuConstPtr& msg);
 		void callbackOdom(const nav_msgs::OdometryConstPtr& msg);
 		void callbackImage(const ros::MessageEvent<sensor_msgs::Image const>& event);
+		bool isStill(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2);
 		bool hasOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2);
+		void getOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2, double& diff_position_m, double& diff_angle_deg);
 		int getCameraIndex(std::string topic_name);
 		bool gotAllNewImages(void);
 		void record(void);
@@ -159,34 +161,20 @@ bool SaveImageWithIMU::isStill(nav_msgs::Odometry odom1, nav_msgs::Odometry odom
 {
 	double diff_position_m, diff_angle_deg;
 	getOdomDiff(odom1, odom2, diff_position_m, diff_angle_deg);
-	if(diff_position_m < _th_still_position_m && diff_angle_deg < _th_still_angle_deg)	_is_still = true;
-	else	_is_still = false;
+	if(diff_position_m < _th_still_position_m && diff_angle_deg < _th_still_angle_deg)	++_still_counter;
+	else	_still_counter = 0;
+	/*print*/
+	// std::cout << "diff_position_m = " << diff_position_m << std::endl;
+	// std::cout << "diff_angle_deg = " << diff_angle_deg << std::endl;
+	/*judge*/
+	if(_still_counter > _th_still_counter)	return true;
+	else	return false;
 }
 
 bool SaveImageWithIMU::hasOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2)
 {
-	/*position*/
-	double dx = odom2.pose.pose.position.x - odom1.pose.pose.position.x;
-	double dy = odom2.pose.pose.position.y - odom1.pose.pose.position.y;
-	double dz = odom2.pose.pose.position.z - odom1.pose.pose.position.z;
-	double diff_position_m = sqrt(dx*dx + dy*dy + dz*dz);
-	/*rotation*/
-	tf::Quaternion q1, q2, q_rel_rot;
-	quaternionMsgToTF(odom1.pose.pose.orientation, q1);
-	quaternionMsgToTF(odom2.pose.pose.orientation, q2);
-	q_rel_rot = q2.inverse()*q1;
-	double droll, dpitch, dyaw;
-	tf::Matrix3x3(q_rel_rot).getRPY(droll, dpitch, dyaw);
-	double diff_angle_deg = q_rel_rot.getAngle()/M_PI*180.0;
-	/*print*/
-	//std::cout << "d_xyz : " 
-	//	<< dx << ", "
-	//	<< dy << ", "
-	//	<< dz << std::endl;
-	//std::cout << "d_rpy : " 
-	//	<< droll/M_PI*180.0 << ", "
-	//	<< dpitch/M_PI*180.0 << ", "
-	//	<< dyaw/M_PI*180.0 << std::endl;
+	double diff_position_m, diff_angle_deg;
+	getOdomDiff(odom1, odom2, diff_position_m, diff_angle_deg);
 	/*judge*/
 	if(diff_position_m > _th_diff_position_m)	return true;
 	if(diff_angle_deg > _th_diff_angle_deg)	return true;

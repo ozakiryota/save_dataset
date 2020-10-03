@@ -5,6 +5,9 @@
 	<!-- rosbag -->
 	<node pkg="rosbag" type="play" name="player" args="--clock /home/amsl/ozaki/bagfiles/ccv2/20201002_214853.bag"/>
 
+	<!-- rviz -->
+	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find save_dataset)/rviz_config/save_imu_multicamera.rviz"/>
+
 	<!-- semi sensor driver -->
 	<node pkg="image_transport" type="republish" name="republish_fc" args="compressed raw">
 		<remap from="in" to="/realsense_fc/color/image_raw"/>
@@ -26,12 +29,13 @@
 		<remap from="in" to="/realsense_rl/color/image_raw"/>
 		<remap from="out" to="/realsense_rl/color/image_raw"/>
 	</node>
-
-	<!-- rviz -->
-	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find save_dataset)/rviz_config/save_imu_multicamera.rviz"/>
+	<node pkg="gyrodometry" name="gyrodometry3d" type="gyrodometry3d">
+		<param name="wait_inipose" type="bool" value="false"/>
+	</node>
 
 	<!-- main -->
 	<node pkg="save_dataset" type="save_imu_multicamera" name="save_imu_multicamera" output="screen">
+		<remap from="/odom" to="/gyrodometry"/>
 		<param name="save_dir_path" type="string" value="$(find save_dataset)/dataset/tmp"/>
 		<!-- <param name="save_csv_name" type="string" value="$(find save_dataset)/dataset/save_imu_multicamera.csv"/> -->
 		<param name="save_img_name" type="string" value="20201001_215149_"/>
@@ -44,7 +48,5 @@
 		<param name="image2" type="string" value="/realsense_rl/color/image_raw"/>
 		<param name="image3" type="string" value="/realsense_rr/color/image_raw"/>
 		<param name="image4" type="string" value="/realsense_fr/color/image_raw"/>
-		<!-- <remap from="/image0" to="/realsense_fc/color/image_raw"/> -->
-		<!-- <remap from="/image1" to="/realsense_fr/color/image_raw"/> -->
 	</node>
 </launch>
