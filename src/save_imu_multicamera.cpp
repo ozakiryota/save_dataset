@@ -257,8 +257,8 @@ void SaveImageWithIMU::record(void)
 		<< p/M_PI*180.0 << ", " 
 		<< y/M_PI*180.0 << std::endl;
 	std::cout << "imu acc: " 
-		<< _imu.linear_acceleration.x << "," 
-		<< _imu.linear_acceleration.y << "," 
+		<< _imu.linear_acceleration.x << ", " 
+		<< _imu.linear_acceleration.y << ", " 
 		<< _imu.linear_acceleration.z << std::endl;
 	/*count*/
 	++_record_counter;
