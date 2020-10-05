@@ -73,7 +73,7 @@ SaveImageWithIMU::SaveImageWithIMU()
 	/*param*/
 	_nhPrivate.param("save_dir_path", _save_dir_path, std::string("dataset"));
 	std::cout << "_save_dir_path = " << _save_dir_path << std::endl;
-	_nhPrivate.param("save_csv_path", _save_csv_path, std::string(_save_dir_path + "/save_multiimage_with_imu.csv"));
+	_nhPrivate.param("save_csv_path", _save_csv_path, std::string(_save_dir_path + "/imu_camera.csv"));
 	std::cout << "_save_csv_path = " << _save_csv_path << std::endl;
 	_nhPrivate.param("save_img_name", _save_img_name, std::string("img"));
 	std::cout << "_save_img_name = " << _save_img_name << std::endl;
