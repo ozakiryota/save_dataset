@@ -256,6 +256,7 @@ void SaveImageWithIMU::record(void)
 		<< r/M_PI*180.0 << ", " 
 		<< p/M_PI*180.0 << ", " 
 		<< y/M_PI*180.0 << std::endl;
+	for(size_t i=0; i<_list_cameras.size(); ++i)	std::cout << "image: " << _list_cameras[i].save_path << std::endl; 
 	std::cout << "imu acc: " 
 		<< _imu.linear_acceleration.x << ", " 
 		<< _imu.linear_acceleration.y << ", " 
@@ -264,6 +265,7 @@ void SaveImageWithIMU::record(void)
 	++_record_counter;
 	/*reset*/
 	for(size_t i=0; i<_list_cameras.size(); ++i)	_list_cameras[i].got_new_image = false;
+	_still_counter = 0;
 	_odom_last = _odom_now;
 }
 

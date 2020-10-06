@@ -1,0 +1,35 @@
+<launch>
+	<!-- global rosparam -->
+	<param name="use_sim_time" value="true"/>
+	<arg name="bagname" default="2020-10-06-16-28-47"/>
+
+	<!-- rosbag -->
+	<node pkg="rosbag" type="play" name="player" args="--clock /home/amsl/ozaki/bagfiles/stick/campus/$(arg bagname).bag"/>
+
+	<!-- rviz -->
+	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find save_dataset)/rviz_config/save_still_imu_camera.rviz"/>
+
+	<!-- image -->
+	<node pkg="image_transport" type="republish" name="republish" args="compressed raw">
+		<remap from="in" to="/camera/color/image_raw"/>
+		<remap from="out" to="/camera/color/image_raw"/>
+	</node>
+
+	<!-- gyrodometry -->
+	<node pkg="gyrodometry" name="gyrodometry3d" type="gyrodometry3d">
+		<param name="wait_inipose" type="bool" value="false"/>
+	</node>
+
+	<!-- main -->
+	<node pkg="save_dataset" type="save_imu_multicamera" name="save_imu_multicamera" output="screen">
+		<remap from="/odom" to="/gyrodometry"/>
+		<param name="save_dir_path" type="string" value="$(find save_dataset)/dataset/tmp"/>
+		<!-- <param name="save_csv_name" type="string" value="$(find save_dataset)/dataset/save_imu_multicamera.csv"/> -->
+		<param name="save_img_name" type="string" value="$(arg bagname)_"/>
+		<param name="save_data_limit" type="int" value="1000"/>
+		<param name="th_diff_position_m" type="double" value="0.5"/>
+		<param name="th_diff_angle_deg" type="double" value="5.0"/>
+		<param name="num_cameras" type="int" value="1"/>
+		<param name="image0" type="string" value="/camera/color/image_raw"/>
+	</node>
+</launch>
