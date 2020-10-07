@@ -16,7 +16,7 @@ class OdomCheckDiffAndStill{
 		nav_msgs::Odometry _odom_now;
 		nav_msgs::Odometry _odom_last;
 		/*counter*/
-		int _record_counter = 0;
+		int _check_counter = 0;
 		int _still_counter = 0;
 		/*flag*/
 		bool _got_first_odom = false;
@@ -126,7 +126,7 @@ void OdomCheckDiffAndStill::printState(void)
 	tf::Quaternion q;
 	quaternionMsgToTF(_odom_now.pose.pose.orientation, q);
 	tf::Matrix3x3(q).getRPY(r, p, y);
-	std::cout << _record_counter << " save point: " 
+	std::cout << _check_counter << "ckeck point: " 
 		<< _odom_now.pose.pose.position.x << ", "
 		<< _odom_now.pose.pose.position.y << ", "
 		<< _odom_now.pose.pose.position.z << ", "
@@ -134,7 +134,7 @@ void OdomCheckDiffAndStill::printState(void)
 		<< p/M_PI*180.0 << ", " 
 		<< y/M_PI*180.0 << std::endl;
 	/*count*/
-	++_record_counter;
+	++_check_counter;
 	/*reset*/
 	_still_counter = 0;
 	_odom_last = _odom_now;
@@ -142,9 +142,9 @@ void OdomCheckDiffAndStill::printState(void)
 
 int main(int argc, char** argv)
 {
-	ros::init(argc, argv, "save_image_with_imu");
+	ros::init(argc, argv, "odom_check_diff_and_still");
 
-	OdomCheckDiffAndStill save_image_with_imu;
+	OdomCheckDiffAndStill odom_check_diff_and_still;
 
 	ros::spin();
 }
