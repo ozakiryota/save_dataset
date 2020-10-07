@@ -126,7 +126,7 @@ void OdomCheckDiffAndStill::printState(void)
 	tf::Quaternion q;
 	quaternionMsgToTF(_odom_now.pose.pose.orientation, q);
 	tf::Matrix3x3(q).getRPY(r, p, y);
-	std::cout << _check_counter << "ckeck point: " 
+	std::cout << _check_counter << " ckeck point: " 
 		<< _odom_now.pose.pose.position.x << ", "
 		<< _odom_now.pose.pose.position.y << ", "
 		<< _odom_now.pose.pose.position.z << ", "
