@@ -202,3 +202,6 @@ target_link_libraries(save_imu_camera_velodyne ${catkin_LIBRARIES})
 #
 add_executable(save_imu_multicamera src/save_imu_multicamera.cpp)
 target_link_libraries(save_imu_multicamera ${catkin_LIBRARIES})
+#
+add_executable(odom_check_diff_and_still src/odom_check_diff_and_still.cpp)
+target_link_libraries(odom_check_diff_and_still ${catkin_LIBRARIES})
