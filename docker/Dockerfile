@@ -21,27 +21,13 @@ RUN mkdir -p /home/ros_catkin_ws/src && \
 	echo "export ROS_WORKSPACE=/home/ros_catkin_ws" >> ~/.bashrc && \
 	echo "function cmk(){\n lastpwd=\$OLDPWD \n cpath=\$(pwd) \n cd /home/ros_catkin_ws \n catkin_make \$@ \n cd \$cpath \n OLDPWD=\$lastpwd \n}" >> ~/.bashrc
 ########## My package ##########
-##### pcl 1.9.1 #####
-RUN	mkdir -p /home/pcl_ws && \
-	cd /home/pcl_ws && \
-	wget https://github.com/PointCloudLibrary/pcl/archive/pcl-1.9.1.tar.gz && \
-	tar -zxvf pcl-1.9.1.tar.gz && \
-	cd pcl-pcl-1.9.1 && \
-	mkdir build && \
-	cd build && \
-	cmake .. && \
-	make -j $(nproc --all) && \
-	make -j $(nproc --all) install
 ##### NO cache #####
 ARG CACHEBUST=1
 ##### git clone #####
-# RUN	cd /home/ros_catkin_ws/src && \
-# 	git clone https://github.com/ozakiryota/gyrodometry && \
-# 	git clone https://github.com/ozakiryota/save_dataset && \
-# 	cd /home/ros_catkin_ws && \
-# 	/bin/bash -c "source /opt/ros/kinetic/setup.bash; catkin_make"
 RUN	cd /home/ros_catkin_ws/src && \
 	git clone https://github.com/ozakiryota/gyrodometry && \
-	git clone https://github.com/ozakiryota/save_dataset
+	git clone https://github.com/ozakiryota/save_dataset && \
+	cd /home/ros_catkin_ws && \
+	/bin/bash -c "source /opt/ros/kinetic/setup.bash; catkin_make"
 ######### Initial position ##########
 WORKDIR /home/ros_catkin_ws
