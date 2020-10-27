@@ -228,7 +228,7 @@ void SaveImageWithIMU::record(void)
 {
 	for(size_t i=0; i<_list_cameras.size(); ++i){
 		/*check*/
-		_list_cameras[i].save_name = _save_img_name + _list_cameras[i].camera_name + "_" + std::to_string(_record_counter) + ".jpg";
+		_list_cameras[i].save_name = _save_img_name + std::to_string(_record_counter) + "_" + _list_cameras[i].camera_name + ".jpg";
 		_list_cameras[i].save_path = _save_dir_path + "/" + _list_cameras[i].save_name;
 		/*check*/
 		std::ifstream ifs(_list_cameras[i].save_path);

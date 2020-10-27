@@ -4,7 +4,7 @@
 	<arg name="bagname" default="2020-10-07-14-45-30"/>
 
 	<!-- rosbag -->
-	<node pkg="rosbag" type="play" name="player" args="--clock /home/amsl/ozaki/bagfiles/stick/still/campus/$(arg bagname).bag"/>
+	<node pkg="rosbag" type="play" name="player" args="--clock /home/amsl/ozaki/bagfiles/stick_imu1cam/still/campus/$(arg bagname).bag"/>
 
 	<!-- rviz -->
 	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find save_dataset)/rviz_config/save_still_imu_camera.rviz"/>

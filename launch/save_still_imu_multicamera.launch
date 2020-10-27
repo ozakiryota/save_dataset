@@ -1,33 +1,31 @@
 <launch>
 	<!-- global rosparam -->
 	<param name="use_sim_time" value="true"/>
+	<arg name="bagname" default="20201021_144843"/>
 
 	<!-- rosbag -->
-	<node pkg="rosbag" type="play" name="player" args="--clock /home/amsl/ozaki/bagfiles/ccv2/20201002_214853.bag"/>
+	<!-- <node pkg="rosbag" type="play" name="player" args="&#45;&#45;clock /home/amsl/ozaki/bagfiles/stick_imu4cam/still/outdoor_dkan/$(arg bagname).bag"/> -->
+	<node pkg="rosbag" type="play" name="player" args="--clock /home/amsl/ozaki/bagfiles/stick_imu4cam/still/campus/$(arg bagname).bag"/>
 
 	<!-- rviz -->
 	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find save_dataset)/rviz_config/save_imu_multicamera.rviz"/>
 
 	<!-- image -->
-	<node pkg="image_transport" type="republish" name="republish_fc" args="compressed raw">
-		<remap from="in" to="/realsense_fc/color/image_raw"/>
-		<remap from="out" to="/realsense_fc/color/image_raw"/>
+	<node pkg="image_transport" type="republish" name="republish_f" args="compressed raw">
+		<remap from="in" to="/realsense_f/color/image_raw"/>
+		<remap from="out" to="/realsense_f/color/image_raw"/>
 	</node>
-	<node pkg="image_transport" type="republish" name="republish_fr" args="compressed raw">
-		<remap from="in" to="/realsense_fr/color/image_raw"/>
-		<remap from="out" to="/realsense_fr/color/image_raw"/>
+	<node pkg="image_transport" type="republish" name="republish_r" args="compressed raw">
+		<remap from="in" to="/realsense_r/color/image_raw"/>
+		<remap from="out" to="/realsense_r/color/image_raw"/>
 	</node>
-	<node pkg="image_transport" type="republish" name="republish_fl" args="compressed raw">
-		<remap from="in" to="/realsense_fl/color/image_raw"/>
-		<remap from="out" to="/realsense_fl/color/image_raw"/>
+	<node pkg="image_transport" type="republish" name="republish_l" args="compressed raw">
+		<remap from="in" to="/realsense_l/color/image_raw"/>
+		<remap from="out" to="/realsense_l/color/image_raw"/>
 	</node>
-	<node pkg="image_transport" type="republish" name="republish_rr" args="compressed raw">
-		<remap from="in" to="/realsense_rr/color/image_raw"/>
-		<remap from="out" to="/realsense_rr/color/image_raw"/>
-	</node>
-	<node pkg="image_transport" type="republish" name="republish_rl" args="compressed raw">
-		<remap from="in" to="/realsense_rl/color/image_raw"/>
-		<remap from="out" to="/realsense_rl/color/image_raw"/>
+	<node pkg="image_transport" type="republish" name="republish_b" args="compressed raw">
+		<remap from="in" to="/realsense_b/color/image_raw"/>
+		<remap from="out" to="/realsense_b/color/image_raw"/>
 	</node>
 
 	<!-- gyrodometry -->
@@ -38,17 +36,19 @@
 	<!-- main -->
 	<node pkg="save_dataset" type="save_imu_multicamera" name="save_imu_multicamera" output="screen">
 		<remap from="/odom" to="/gyrodometry"/>
-		<param name="save_dir_path" type="string" value="$(find save_dataset)/dataset/tmp"/>
+		<param name="save_dir_path" type="string" value="$(find save_dataset)/save/tmp"/>
 		<!-- <param name="save_csv_name" type="string" value="$(find save_dataset)/dataset/save_imu_multicamera.csv"/> -->
-		<param name="save_img_name" type="string" value="20201001_215149_"/>
+		<param name="save_img_name" type="string" value="$(arg bagname)_"/>
 		<param name="save_data_limit" type="int" value="1000"/>
 		<param name="th_diff_position_m" type="double" value="0.5"/>
 		<param name="th_diff_angle_deg" type="double" value="5.0"/>
-		<param name="num_cameras" type="int" value="5"/>
-		<param name="image0" type="string" value="/realsense_fc/color/image_raw"/>
-		<param name="image1" type="string" value="/realsense_fl/color/image_raw"/>
-		<param name="image2" type="string" value="/realsense_rl/color/image_raw"/>
-		<param name="image3" type="string" value="/realsense_rr/color/image_raw"/>
-		<param name="image4" type="string" value="/realsense_fr/color/image_raw"/>
+		<param name="num_cameras" type="int" value="4"/>
+		<param name="image0" type="string" value="/realsense_f/color/image_raw"/>
+		<param name="image1" type="string" value="/realsense_l/color/image_raw"/>
+		<param name="image2" type="string" value="/realsense_b/color/image_raw"/>
+		<param name="image3" type="string" value="/realsense_r/color/image_raw"/>
 	</node>
+
+	<!-- for visualization -->
+	<node pkg="tf" type="static_transform_publisher" name="static_transform_publisher" args="0 0 0 0 0 0 /gyrodometry /imu 1" />
 </launch>
