@@ -191,8 +191,8 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-add_executable(imu_visualize_test src/imu_visualize_test.cpp)
-target_link_libraries(imu_visualize_test ${catkin_LIBRARIES})
+add_executable(test_imu_to_posestamped_for_visualization src/test_imu_to_posestamped_for_visualization.cpp)
+target_link_libraries(test_imu_to_posestamped_for_visualization ${catkin_LIBRARIES})
 #
 add_executable(save_imu_camera src/save_imu_camera.cpp)
 target_link_libraries(save_imu_camera ${catkin_LIBRARIES})
@@ -200,8 +200,8 @@ target_link_libraries(save_imu_camera ${catkin_LIBRARIES})
 add_executable(save_imu_camera_velodyne src/save_imu_camera_velodyne.cpp)
 target_link_libraries(save_imu_camera_velodyne ${catkin_LIBRARIES})
 #
-add_executable(save_imu_multicamera src/save_imu_multicamera.cpp)
-target_link_libraries(save_imu_multicamera ${catkin_LIBRARIES})
+add_executable(save_static_imu_multicamera src/save_static_imu_multicamera.cpp)
+target_link_libraries(save_static_imu_multicamera ${catkin_LIBRARIES})
 #
-add_executable(odom_check_diff_and_still src/odom_check_diff_and_still.cpp)
-target_link_libraries(odom_check_diff_and_still ${catkin_LIBRARIES})
+add_executable(check_odom_diff_and_still src/check_odom_diff_and_still.cpp)
+target_link_libraries(check_odom_diff_and_still ${catkin_LIBRARIES})

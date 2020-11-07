@@ -1,0 +1,13 @@
+<launch>
+	<!-- gyrodometry -->
+	<node pkg="gyrodometry" name="gyrodometry3d" type="gyrodometry3d">
+		<param name="wait_inipose" type="bool" value="false"/>
+	</node>
+
+	<!-- main -->
+	<node pkg="save_dataset" type="check_odom_diff_and_still" name="check_odom_diff_and_still" output="screen">
+		<remap from="/odom" to="/gyrodometry"/>
+		<param name="th_diff_position_m" type="double" value="0.5"/>
+		<param name="th_diff_angle_deg" type="double" value="5.0"/>
+	</node>
+</launch>

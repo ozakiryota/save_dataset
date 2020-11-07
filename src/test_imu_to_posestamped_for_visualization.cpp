@@ -4,7 +4,7 @@
 #include <sensor_msgs/Imu.h>
 #include <geometry_msgs/PoseStamped.h>
 
-class IMUVisualizeTest{
+class ImuToPosestamped{
 	private:
 		/*node hangle*/
 		ros::NodeHandle nh;
@@ -18,13 +18,13 @@ class IMUVisualizeTest{
 		/*param*/
 		std::string frame_id;
 	public:
-		IMUVisualizeTest();
+		ImuToPosestamped();
 		void InitializePose(geometry_msgs::PoseStamped& pose);
 		void CallbackIMU(const sensor_msgs::ImuConstPtr& msg);
 		void Publication(void);
 };
 
-IMUVisualizeTest::IMUVisualizeTest()
+ImuToPosestamped::ImuToPosestamped()
 	:nhPrivate("~")
 {
 	/*param*/
@@ -32,14 +32,14 @@ IMUVisualizeTest::IMUVisualizeTest()
 	std::cout << "frame_id = " << frame_id << std::endl;
 
 	/*subscriber*/
-	sub_imu = nh.subscribe("/imu/data", 1, &IMUVisualizeTest::CallbackIMU, this);
+	sub_imu = nh.subscribe("/imu/data", 1, &ImuToPosestamped::CallbackIMU, this);
 	/*publisher*/
 	pub_pose = nh.advertise<geometry_msgs::PoseStamped>("/pose", 1);
 	/*initialize*/
 	InitializePose(pose);
 }
 
-void IMUVisualizeTest::InitializePose(geometry_msgs::PoseStamped& pose)
+void ImuToPosestamped::InitializePose(geometry_msgs::PoseStamped& pose)
 {
 	pose.pose.position.x = 0.0;
 	pose.pose.position.y = 0.0;
@@ -50,7 +50,7 @@ void IMUVisualizeTest::InitializePose(geometry_msgs::PoseStamped& pose)
 	pose.pose.orientation.w = 1.0;
 }
 
-void IMUVisualizeTest::CallbackIMU(const sensor_msgs::ImuConstPtr& msg)
+void ImuToPosestamped::CallbackIMU(const sensor_msgs::ImuConstPtr& msg)
 {
 	pose.header.stamp = msg->header.stamp;
 	pose.pose.orientation = msg->orientation;
@@ -58,7 +58,7 @@ void IMUVisualizeTest::CallbackIMU(const sensor_msgs::ImuConstPtr& msg)
 	Publication();
 }
 
-void IMUVisualizeTest::Publication(void)
+void ImuToPosestamped::Publication(void)
 {
 	/*publish*/
 	pose.header.frame_id = frame_id;
@@ -67,9 +67,9 @@ void IMUVisualizeTest::Publication(void)
 
 int main(int argc, char** argv)
 {
-	ros::init(argc, argv, "imu_visualize_test");
+	ros::init(argc, argv, "test_imu_to_posestamped_for_visualization");
 
-	IMUVisualizeTest imu_visualize_test;
+	ImuToPosestamped test_imu_to_posestamped_for_visualization;
 
 	ros::spin();
 }

@@ -11,10 +11,10 @@
 	</node>
 
 	<!-- rviz -->
-	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find save_dataset)/rviz_config/imu_visualize_test.rviz"/>
+	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find save_dataset)/rviz_config/test_imu_to_posestamped_for_visualization.rviz"/>
 
 	<!-- main -->
-	<node pkg="save_dataset" name="imu_visualize_test" type="imu_visualize_test" output="screen">
+	<node pkg="save_dataset" name="test_imu_to_posestamped_for_visualization" type="test_imu_to_posestamped_for_visualization" output="screen">
 		<!-- <param name="frame_id" type="string" value="/odom"/> -->
 	</node>
 </launch>

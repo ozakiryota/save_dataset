@@ -9,4 +9,4 @@ docker run -it --rm \
 	--volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
 	--net=host \
 	$image_name:latest \
-	bash -c "source /home/ros_catkin_ws/devel/setup.bash;roslaunch save_dataset odom_check_diff_and_still.launch"
+	bash -c "source /home/ros_catkin_ws/devel/setup.bash;roslaunch save_dataset check_odom_diff_and_still.launch"

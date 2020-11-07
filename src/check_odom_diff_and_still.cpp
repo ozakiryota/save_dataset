@@ -4,7 +4,7 @@
 /*msg*/
 #include <nav_msgs/Odometry.h>
 
-class OdomCheckDiffAndStill{
+class CheckOdomDiffAndStill{
 	private:
 		/*node hangle*/
 		ros::NodeHandle _nh;
@@ -28,7 +28,7 @@ class OdomCheckDiffAndStill{
 		double _th_still_angle_deg;
 		int _th_still_counter;
 	public:
-		OdomCheckDiffAndStill();
+		CheckOdomDiffAndStill();
 		void callbackOdom(const nav_msgs::OdometryConstPtr& msg);
 		bool isStill(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2);
 		bool hasOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2);
@@ -36,7 +36,7 @@ class OdomCheckDiffAndStill{
 		void printState(void);
 };
 
-OdomCheckDiffAndStill::OdomCheckDiffAndStill()
+CheckOdomDiffAndStill::CheckOdomDiffAndStill()
 	:_nhPrivate("~")
 {
 	/*param*/
@@ -52,10 +52,10 @@ OdomCheckDiffAndStill::OdomCheckDiffAndStill()
 	std::cout << "_th_still_counter = " << _th_still_counter << std::endl;
 
 	/*subscriber*/
-	_sub_odom = _nh.subscribe("/odom", 1, &OdomCheckDiffAndStill::callbackOdom, this);
+	_sub_odom = _nh.subscribe("/odom", 1, &CheckOdomDiffAndStill::callbackOdom, this);
 }
 
-void OdomCheckDiffAndStill::callbackOdom(const nav_msgs::OdometryConstPtr& msg)
+void CheckOdomDiffAndStill::callbackOdom(const nav_msgs::OdometryConstPtr& msg)
 {
 	if(_got_first_odom)	_is_still = isStill(*msg, _odom_now);
 	_odom_now = *msg;
@@ -69,7 +69,7 @@ void OdomCheckDiffAndStill::callbackOdom(const nav_msgs::OdometryConstPtr& msg)
 	}
 }
 
-bool OdomCheckDiffAndStill::isStill(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2)
+bool CheckOdomDiffAndStill::isStill(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2)
 {
 	double diff_position_m, diff_angle_deg;
 	getOdomDiff(odom1, odom2, diff_position_m, diff_angle_deg);
@@ -83,7 +83,7 @@ bool OdomCheckDiffAndStill::isStill(nav_msgs::Odometry odom1, nav_msgs::Odometry
 	else	return false;
 }
 
-bool OdomCheckDiffAndStill::hasOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2)
+bool CheckOdomDiffAndStill::hasOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2)
 {
 	double diff_position_m, diff_angle_deg;
 	getOdomDiff(odom1, odom2, diff_position_m, diff_angle_deg);
@@ -93,7 +93,7 @@ bool OdomCheckDiffAndStill::hasOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odom
 	return false;
 }
 
-void OdomCheckDiffAndStill::getOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2, double& diff_position_m, double& diff_angle_deg)
+void CheckOdomDiffAndStill::getOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2, double& diff_position_m, double& diff_angle_deg)
 {
 	/*position*/
 	double dx = odom2.pose.pose.position.x - odom1.pose.pose.position.x;
@@ -119,7 +119,7 @@ void OdomCheckDiffAndStill::getOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odom
 	//	<< dyaw/M_PI*180.0 << std::endl;
 }
 
-void OdomCheckDiffAndStill::printState(void)
+void CheckOdomDiffAndStill::printState(void)
 {
 	/*print*/
 	double r, p, y;
@@ -142,9 +142,9 @@ void OdomCheckDiffAndStill::printState(void)
 
 int main(int argc, char** argv)
 {
-	ros::init(argc, argv, "odom_check_diff_and_still");
+	ros::init(argc, argv, "check_odom_diff_and_still");
 
-	OdomCheckDiffAndStill odom_check_diff_and_still;
+	CheckOdomDiffAndStill check_odom_diff_and_still;
 
 	ros::spin();
 }

@@ -11,7 +11,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>
 
-class SaveImageWithIMU{
+class SaveStaticImuMultiCamera{
 	private:
 		/*node hangle*/
 		ros::NodeHandle _nh;
@@ -55,7 +55,7 @@ class SaveImageWithIMU{
 		int _th_still_counter;
 		int _num_cameras;
 	public:
-		SaveImageWithIMU();
+		SaveStaticImuMultiCamera();
 		void callbackIMU(const sensor_msgs::ImuConstPtr& msg);
 		void callbackOdom(const nav_msgs::OdometryConstPtr& msg);
 		void callbackImage(const ros::MessageEvent<sensor_msgs::Image const>& event);
@@ -68,7 +68,7 @@ class SaveImageWithIMU{
 		std::vector<std::string> splitSentence(std::string sentence, std::string delimiter);
 };
 
-SaveImageWithIMU::SaveImageWithIMU()
+SaveStaticImuMultiCamera::SaveStaticImuMultiCamera()
 	:_nhPrivate("~")
 {
 	/*param*/
@@ -102,10 +102,10 @@ SaveImageWithIMU::SaveImageWithIMU()
 	}
 
 	/*subscriber*/
-	_sub_imu = _nh.subscribe("/imu/data", 1, &SaveImageWithIMU::callbackIMU, this);
-	_sub_odom = _nh.subscribe("/odom", 1, &SaveImageWithIMU::callbackOdom, this);
+	_sub_imu = _nh.subscribe("/imu/data", 1, &SaveStaticImuMultiCamera::callbackIMU, this);
+	_sub_odom = _nh.subscribe("/odom", 1, &SaveStaticImuMultiCamera::callbackOdom, this);
 	for(int i=0; i<_num_cameras; ++i){
-		ros::Subscriber sub_image = _nh.subscribe(_list_cameras[i].topic_name, 1, &SaveImageWithIMU::callbackImage, this);
+		ros::Subscriber sub_image = _nh.subscribe(_list_cameras[i].topic_name, 1, &SaveStaticImuMultiCamera::callbackImage, this);
 		_list_sub_images.push_back(sub_image);
 	}
 	/*initialize*/
@@ -116,13 +116,13 @@ SaveImageWithIMU::SaveImageWithIMU()
 	}
 }
 
-void SaveImageWithIMU::callbackIMU(const sensor_msgs::ImuConstPtr& msg)
+void SaveStaticImuMultiCamera::callbackIMU(const sensor_msgs::ImuConstPtr& msg)
 {
 	_imu = *msg;
 	if(!_got_first_imu)	_got_first_imu = true;
 }
 
-void SaveImageWithIMU::callbackOdom(const nav_msgs::OdometryConstPtr& msg)
+void SaveStaticImuMultiCamera::callbackOdom(const nav_msgs::OdometryConstPtr& msg)
 {
 	if(_got_first_odom)	_is_still = isStill(*msg, _odom_now);
 	_odom_now = *msg;
@@ -132,7 +132,7 @@ void SaveImageWithIMU::callbackOdom(const nav_msgs::OdometryConstPtr& msg)
 	}
 }
 
-void SaveImageWithIMU::callbackImage(const ros::MessageEvent<sensor_msgs::Image const>& event)
+void SaveStaticImuMultiCamera::callbackImage(const ros::MessageEvent<sensor_msgs::Image const>& event)
 {
 	const ros::M_string& header = event.getConnectionHeader();
 	std::string topic_name = header.at("topic");
@@ -158,7 +158,7 @@ void SaveImageWithIMU::callbackImage(const ros::MessageEvent<sensor_msgs::Image 
 	}
 }
 
-bool SaveImageWithIMU::isStill(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2)
+bool SaveStaticImuMultiCamera::isStill(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2)
 {
 	double diff_position_m, diff_angle_deg;
 	getOdomDiff(odom1, odom2, diff_position_m, diff_angle_deg);
@@ -172,7 +172,7 @@ bool SaveImageWithIMU::isStill(nav_msgs::Odometry odom1, nav_msgs::Odometry odom
 	else	return false;
 }
 
-bool SaveImageWithIMU::hasOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2)
+bool SaveStaticImuMultiCamera::hasOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2)
 {
 	double diff_position_m, diff_angle_deg;
 	getOdomDiff(odom1, odom2, diff_position_m, diff_angle_deg);
@@ -182,7 +182,7 @@ bool SaveImageWithIMU::hasOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odometry 
 	return false;
 }
 
-void SaveImageWithIMU::getOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2, double& diff_position_m, double& diff_angle_deg)
+void SaveStaticImuMultiCamera::getOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odometry odom2, double& diff_position_m, double& diff_angle_deg)
 {
 	/*position*/
 	double dx = odom2.pose.pose.position.x - odom1.pose.pose.position.x;
@@ -208,7 +208,7 @@ void SaveImageWithIMU::getOdomDiff(nav_msgs::Odometry odom1, nav_msgs::Odometry 
 	//	<< dyaw/M_PI*180.0 << std::endl;
 }
 
-int SaveImageWithIMU::getCameraIndex(std::string topic_name)
+int SaveStaticImuMultiCamera::getCameraIndex(std::string topic_name)
 {
 	for(size_t index=0; index<_list_cameras.size(); ++index){
 		if(topic_name == _list_cameras[index].topic_name)	return index;
@@ -216,7 +216,7 @@ int SaveImageWithIMU::getCameraIndex(std::string topic_name)
 	return -1;
 }
 
-bool SaveImageWithIMU::gotAllNewImages(void)
+bool SaveStaticImuMultiCamera::gotAllNewImages(void)
 {
 	for(size_t index=0; index<_list_cameras.size(); ++index){
 		if(!_list_cameras[index].got_new_image)	return false;
@@ -224,7 +224,7 @@ bool SaveImageWithIMU::gotAllNewImages(void)
 	return true;
 }
 
-void SaveImageWithIMU::record(void)
+void SaveStaticImuMultiCamera::record(void)
 {
 	for(size_t i=0; i<_list_cameras.size(); ++i){
 		/*check*/
@@ -271,7 +271,7 @@ void SaveImageWithIMU::record(void)
 	_odom_last = _odom_now;
 }
 
-std::vector<std::string> SaveImageWithIMU::splitSentence(std::string sentence, std::string delimiter)
+std::vector<std::string> SaveStaticImuMultiCamera::splitSentence(std::string sentence, std::string delimiter)
 {
 	std::vector<std::string> words;
 	size_t position = 0;
@@ -290,9 +290,9 @@ std::vector<std::string> SaveImageWithIMU::splitSentence(std::string sentence, s
 
 int main(int argc, char** argv)
 {
-	ros::init(argc, argv, "save_image_with_imu");
+	ros::init(argc, argv, "save_static_imu_multicamera");
 
-	SaveImageWithIMU save_image_with_imu;
+	SaveStaticImuMultiCamera save_static_imu_multicamera;
 
 	ros::spin();
 }
