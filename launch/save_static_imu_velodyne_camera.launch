@@ -1,0 +1,41 @@
+<launch>
+	<!-- param -->
+	<param name="use_sim_time" value="true"/>
+	<arg name="bagname" default="20201028_112346"/>
+
+	<!-- rosbag -->
+	<node pkg="rosbag" type="play" name="player" args="--clock /home/amsl/ozaki/bagfiles/stick_vlp32imu4cam/still/campus/$(arg bagname).bag"/>
+	<!-- <node pkg="rosbag" type="play" name="player" args="&#45;&#45;clock /home/amsl/ozaki/bagfiles/stick_vlp32imu4cam/still/dkan_outdoor/$(arg bagname).bag"/> -->
+
+	<!-- rviz -->
+	<node pkg="rviz" type="rviz" name="rviz" args="-d $(find save_dataset)/rviz_config/save_imu_velodyne.rviz"/>
+
+	<!-- image -->
+	<node pkg="image_transport" type="republish" name="republish_f" args="compressed raw">
+		<remap from="in" to="/realsense_f/color/image_raw"/>
+		<remap from="out" to="/realsense_f/color/image_raw"/>
+	</node>
+
+	<!-- velodyne -->
+	<include file="$(find velodyne_pointcloud)/launch/VLP-32C_points.launch"/>
+	<node pkg="velodyne_pointcloud_to_depthimage" name="velodyne_pointcloud_to_depthimage" type="velodyne_pointcloud_to_depthimage">
+		<param name="points_per_ring" type="int" value="1812"/>
+	</node>
+
+	<!-- gyrodometry -->
+	<node pkg="gyrodometry" name="gyrodometry3d" type="gyrodometry3d">
+		<param name="wait_inipose" type="bool" value="false"/>
+	</node>
+
+	<!-- MAIN -->
+	<param name="save_data_name" type="string" value="$(arg bagname)_"/>
+	<param name="th_still_counter" type="int" value="30"/>
+	<node pkg="save_dataset" name="save_static_imu_depth_camera" type="save_static_imu_depth_camera.py" output="screen">
+		<remap from="/color_image" to="/realsense_f/color/image_raw"/>
+		<remap from="/depth_image" to="/depth_image/64fc1"/>
+		<remap from="/odom" to="/gyrodometry"/>
+	</node>
+
+	<!-- for visualization -->
+	<node pkg="tf" type="static_transform_publisher" name="static_transform_publisher" args="0 0 0 0 0 0 /velodyne /imu 1" />
+</launch>
