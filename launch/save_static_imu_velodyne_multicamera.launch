@@ -4,7 +4,7 @@
 	<arg name="bagname" default="20201028_112346"/>
 
 	<!-- rosbag -->
-	<node pkg="rosbag" type="play" name="player" args="--clock /home/amsl/ozaki/bagfiles/stick_vlp32imu4cam/still/campus/$(arg bagname).bag"/>
+	<!-- <node pkg="rosbag" type="play" name="player" args="&#45;&#45;clock /home/amsl/ozaki/bagfiles/stick_vlp32imu4cam/still/campus/$(arg bagname).bag"/> -->
 	<!-- <node pkg="rosbag" type="play" name="player" args="&#45;&#45;clock /home/amsl/ozaki/bagfiles/stick_vlp32imu4cam/still/dkan_outdoor/$(arg bagname).bag"/> -->
 
 	<!-- rviz -->

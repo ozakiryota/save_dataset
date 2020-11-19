@@ -40,7 +40,7 @@ class SaveStaticImuDepth:
         ## path
         current_dir_path = os.path.dirname(os.path.abspath(__file__))
         self.save_dir_path = rospy.get_param("save_dir_path", os.path.join(current_dir_path, "../save/tmp"))
-        self.save_csv_path = rospy.get_param("save_csv_path", os.path.join(self.save_dir_path, "imu_lidar.csv"))
+        self.save_csv_path = rospy.get_param("save_csv_path", os.path.join(self.save_dir_path, "imu_lidar_camera.csv"))
         self.save_data_name = rospy.get_param("save_data_name", "data_")
         ## counter
         self.record_counter = 0
